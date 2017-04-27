@@ -7598,7 +7598,7 @@ You are welcome to use this library for commercial purposes. For attribution, we
 <part name="U$2" library="CalvEngIO-Symbols" deviceset="VLIPO" device=""/>
 <part name="U$3" library="CalvEngIO-Symbols" deviceset="VLIPO" device=""/>
 <part name="U$4" library="CalvEngIO-Symbols" deviceset="VLIPO" device=""/>
-<part name="U$7" library="OrlandoRonMod" deviceset="CRYSTAL-CA-310" device=""/>
+<part name="XTAL" library="OrlandoRonMod" deviceset="CRYSTAL-CA-310" device=""/>
 <part name="C1" library="CalvEngIO-Passives" deviceset="CAPACITOR" device="0402" value="22p"/>
 <part name="C2" library="CalvEngIO-Passives" deviceset="CAPACITOR" device="0402" value="22p"/>
 <part name="GND1" library="CalvEngIO-Symbols" deviceset="GND" device=""/>
@@ -7712,7 +7712,7 @@ Attribution-ShareAlike 4.0 International</text>
 <instance part="U$2" gate="G$1" x="35.56" y="215.9"/>
 <instance part="U$3" gate="G$1" x="53.34" y="218.44"/>
 <instance part="U$4" gate="G$1" x="45.72" y="238.76"/>
-<instance part="U$7" gate="G$1" x="55.88" y="198.12" rot="R90"/>
+<instance part="XTAL" gate="G$1" x="55.88" y="198.12" rot="R90"/>
 <instance part="C1" gate="G$1" x="55.88" y="190.5" rot="R180"/>
 <instance part="C2" gate="G$1" x="45.72" y="190.5" rot="R180"/>
 <instance part="GND1" gate="1" x="45.72" y="180.34"/>
@@ -8321,7 +8321,7 @@ Attribution-ShareAlike 4.0 International</text>
 <net name="N$1" class="0">
 <segment>
 <pinref part="ARDUINO" gate="G$1" pin="PB6(XTAL1/TOSC1)"/>
-<pinref part="U$7" gate="G$1" pin="2"/>
+<pinref part="XTAL" gate="G$1" pin="2"/>
 <wire x1="58.42" y1="200.66" x2="55.88" y2="200.66" width="0.1524" layer="91"/>
 <pinref part="C2" gate="G$1" pin="2"/>
 <wire x1="45.72" y1="193.04" x2="45.72" y2="200.66" width="0.1524" layer="91"/>
@@ -8332,7 +8332,7 @@ Attribution-ShareAlike 4.0 International</text>
 <net name="N$2" class="0">
 <segment>
 <pinref part="ARDUINO" gate="G$1" pin="PB7(XTAL2/TOSC2)"/>
-<pinref part="U$7" gate="G$1" pin="1"/>
+<pinref part="XTAL" gate="G$1" pin="1"/>
 <wire x1="58.42" y1="195.58" x2="55.88" y2="195.58" width="0.1524" layer="91"/>
 <pinref part="C1" gate="G$1" pin="2"/>
 <wire x1="55.88" y1="193.04" x2="55.88" y2="195.58" width="0.1524" layer="91"/>
