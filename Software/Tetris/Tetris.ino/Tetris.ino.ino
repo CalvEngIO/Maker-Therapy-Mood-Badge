@@ -58,13 +58,17 @@ long lastTime = 0;
 
 int left = A0;
 int right = A7;
-int rotate = A6;
+int rotateShape = A6;
+int moveTime;
 
-char shape[7]   = { 'I', 'O', 'T', 'S', 'Z', 'J', 'L' };
+void refreshScreen();
+
+int numShapes = 7;
+//char shape[numShapes]   = { 'I', 'O', 'T', 'S', 'Z', 'J', 'L' };
 int shapeProb[7] = {  1 ,  1 ,  1 ,  1 ,  1 ,  1 ,  1  }; //All equal rate of occurance currently
 
 int activeShape[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};  // {ShapeID, Anchor Coordinate(1 2 3 or 4), r1, c1, r2, c2, r3, c3, r4, c4}
-boolean playField[8][8] = {0};
+boolean playField[8][8];
 
 
 void setup() 
@@ -80,7 +84,15 @@ void setup()
 
   pinMode(left, INPUT);
   pinMode(right, INPUT);
-  pinMode(rotate, INPUT);
+  pinMode(rotateShape, INPUT);
+
+  for(int i = 0; i < 8; i++)
+  {
+    for(int j = 0; j < 8; j++)
+    {
+      playField[i][j] = 0;
+    }
+  }
   
   lastTime = millis();
   addShape();
@@ -100,10 +112,10 @@ void loop() {
     lastTime = millis();
     moveRight();
   }
-  if(analogRead(action) > 700 && (millis() - lastTime) > 250)
+  if(analogRead(rotateShape) > 700 && (millis() - lastTime) > 250)
   {
     lastTime = millis();
-    rotate();
+    // rotateShape();
   }
 
   refreshScreen();
@@ -145,7 +157,7 @@ void addShape()
   // Won't add a shape if the user has lost
   for(int i = 0; i < 8; i++)
   {
-    if playField[0][i] == 1]
+    if (playField[0][i] == 1)
     {
       endGame();
       break;
@@ -154,44 +166,75 @@ void addShape()
   
   //selectShape
   double selection = 0;
-  for (int i = 0; i < length(shape); i++)
+  int sumProb = 0;
+  for (int i = 0; i < numShapes; i++)
   {
     selection += random() * shapeProb[i];
+    sumProb += shapeProb[i];
   }
-  selection = (int) (selection / sum(shapeProb))
+  int shape = (int) (selection / sumProb);
 
-  switch(selection):
+  switch(shape) {
     case 0:
       //Shape 'I'
-      activeShape = {0, 2, 0, 2, 0, 3, 0, 4, 0, 5};
+      activeShape[0] = 0; activeShape[1] = 2;  //ShapeID; Anchor Coordinate(1 2 3 or 4)
+      activeShape[2] = 0; activeShape[3] = 2;  //Block 1 (r1; c1)
+      activeShape[4] = 0; activeShape[5] = 3;  //Block 2 (r2; c2)
+      activeShape[6] = 0; activeShape[7] = 4;  //Block 3 (r3; c3)
+      activeShape[8] = 0; activeShape[9] = 0;  //Block 4 (r4; c4)
       break;
     case 1:
       //Shape 'O'
-      activeShape = {1, 1, 0, 3, 0, 4, 1, 3, 1, 4};
+      activeShape[0] = 1; activeShape[1] = 1;  //ShapeID; Anchor Coordinate(1 2 3 or 4)
+      activeShape[2] = 0; activeShape[3] = 3;  //Block 1 (r1; c1)
+      activeShape[4] = 0; activeShape[5] = 4;  //Block 2 (r2; c2)
+      activeShape[6] = 1; activeShape[7] = 3;  //Block 3 (r3; c3)
+      activeShape[8] = 1; activeShape[9] = 4;  //Block 4 (r4; c4)
       break;
     case 2:
       //Shape 'T'
-      activeShape = {2, 2, 0, 2, 0, 3, 0, 4, 1, 3};
+      activeShape[0] = 2; activeShape[1] = 2;  //ShapeID; Anchor Coordinate(1 2 3 or 4)
+      activeShape[2] = 0; activeShape[3] = 2;  //Block 1 (r1; c1)
+      activeShape[4] = 0; activeShape[5] = 3;  //Block 2 (r2; c2)
+      activeShape[6] = 0; activeShape[7] = 4;  //Block 3 (r3; c3)
+      activeShape[8] = 1; activeShape[9] = 3;  //Block 4 (r4; c4)
       break;
     case 3:
       //Shape 'S'
-      activeShape = {3, 1, 0, 3, 0, 4, 1, 2, 1, 3};
+      activeShape[0] = 3; activeShape[1] = 1;  //ShapeID; Anchor Coordinate(1 2 3 or 4)
+      activeShape[2] = 0; activeShape[3] = 3;  //Block 1 (r1; c1)
+      activeShape[4] = 0; activeShape[5] = 4;  //Block 2 (r2; c2)
+      activeShape[6] = 1; activeShape[7] = 2;  //Block 3 (r3; c3)
+      activeShape[8] = 1; activeShape[9] = 3;  //Block 4 (r4; c4)
       break;
     case 4:
       //Shape 'Z'
-      activeShape = {4, 2, 0, 2, 0, 3, 1, 3, 1, 4};
+      activeShape[0] = 4; activeShape[1] = 2;  //ShapeID; Anchor Coordinate(1 2 3 or 4)
+      activeShape[2] = 0; activeShape[3] = 2;  //Block 1 (r1; c1)
+      activeShape[4] = 0; activeShape[5] = 3;  //Block 2 (r2; c2)
+      activeShape[6] = 1; activeShape[7] = 3;  //Block 3 (r3; c3)
+      activeShape[8] = 1; activeShape[9] = 4;  //Block 4 (r4; c4)
       break;
     case 5:
       //Shape 'J'
-      activeShape = {5, 3, 0, 2, 0, 3, 0, 4, 1, 4};
+      activeShape[0] = 5; activeShape[1] = 3;  //ShapeID; Anchor Coordinate(1 2 3 or 4)
+      activeShape[2] = 0; activeShape[3] = 2;  //Block 1 (r1; c1)
+      activeShape[4] = 0; activeShape[5] = 3;  //Block 2 (r2; c2)
+      activeShape[6] = 0; activeShape[7] = 4;  //Block 3 (r3; c3)
+      activeShape[8] = 1; activeShape[9] = 4;  //Block 4 (r4; c4)
       break;
     case 6:
       //Shape 'L'
-      activeShape = {6, 1, 0, 2, 0, 3, 0, 4, 1, 2};
+      activeShape[0] = 6; activeShape[1] = 1;  //ShapeID; Anchor Coordinate(1 2 3 or 4)
+      activeShape[2] = 0; activeShape[3] = 2;  //Block 1 (r1; c1)
+      activeShape[4] = 0; activeShape[5] = 3;  //Block 2 (r2; c2)
+      activeShape[6] = 0; activeShape[7] = 4;  //Block 3 (r3; c3)
+      activeShape[8] = 1; activeShape[9] = 2;  //Block 4 (r4; c4)
       break;
+  }
 }
 
-void refreshScreen
+void refreshScreen()
 {
   for(int i = 0; i < 8; i++)
   {
@@ -202,6 +245,7 @@ void refreshScreen
   // Updates the play field
   for(int i = 0; i < 8; i++)
   {
+    // Updates one row
     for(int j = 0; j < 8; j++)
     {
       if (playField[i][j] == 1)
@@ -210,19 +254,30 @@ void refreshScreen
         digitalWrite(columns[i],HIGH);
       }
     }
+
+    // Then clears the screen
+    for(int i = 0; i < 8; i++)
+    {
+      digitalWrite(rows[i],HIGH);
+      digitalWrite(columns[i],LOW);
+    }
   }
 
   // Updates the active shape
   for(int i = 2; i < 10; i += 2)
   {
-    try
-    {
+    //try
+    //{
       digitalWrite(rows[ activeShape[i] ],LOW);
       digitalWrite(columns[ activeShape[i + 1] ],HIGH);
+    /*
     }
-    // Do I need a catch block?
-    // If index out of bounds, then just skip it.  The block still exists
-    // it just could have gone off the top of the screen (due to rotation)
+    catch(...)
+    {
+      // If index out of bounds, then just skip it.  The block still exists
+      // it just could have gone off the top of the screen (due to rotation)
+    }
+    */
   }
 }
 
@@ -231,8 +286,8 @@ boolean moveDown()
   boolean move = true;
   for(int i = 2; i < 10; i += 2)
   {
-    if (playField[ activeShape[i] + 1 ][ activeShape[i + 1] ] == 1) ||
-       (activeShape[i] + 1 == 8)
+    if ( (playField[ activeShape[i] + 1 ][ activeShape[i + 1] ] == 1) ||
+         (activeShape[i] + 1 == 8) )
     {
       move = false;
     }
@@ -247,7 +302,7 @@ boolean moveDown()
   }
   else
   {
-    for(int i = 3; i < 10; i += 2)
+    for(int i = 2; i < 10; i += 2)
     {
       playField[ activeShape[i] ][ activeShape[i + 1] ] = 1;
     }
@@ -263,7 +318,7 @@ void cancelBlocks()
     boolean rowDelete = true;
     for (int j = 0; j < 8; j++)
     {
-      if playField[i][j] == 0)
+      if (playField[i][j] == 0)
       {
         rowDelete = false;
         break;
@@ -278,7 +333,9 @@ void cancelBlocks()
           playField[m][n] = playField[m - 1][n];
         }
       }
-      playField[0] = {0, 0, 0, 0, 0, 0, 0, 0};
+      playField[0][0] = 0; playField[0][1] = 0; playField[0][2] = 0;
+      playField[0][3] = 0; playField[0][4] = 0; playField[0][5] = 0;
+      playField[0][6] = 0; playField[0][7] = 0;
     }
     else
     {
@@ -292,15 +349,15 @@ void moveLeft()
   boolean move = true;
   for(int i = 2; i < 10; i += 2)
   {
-    if (activeShape[i + 1] - 1 == -1) ||
-       (playField[ activeShape[i] ][ activeShape[i + 1] - 1 ] == 1)
+    if ( (activeShape[i + 1] - 1 == -1) ||
+         (playField[ activeShape[i] ][ activeShape[i + 1] - 1 ] == 1) )
     {
       move = false;
     }
   }
   if (move == true)
   {
-    for(int i = 3; i < 10; i += 2)
+    for(int i = 2; i < 10; i += 2)
     {
       activeShape[i + 1] -= 1;
     }
@@ -312,24 +369,24 @@ void moveRight()
   boolean move = true;
   for(int i = 2; i < 10; i += 2)
   {
-    if (activeShape[i + 1] + 1 == 8) ||
-       (playField[ activeShape[i] ][ activeShape[i + 1] + 1 ] == 1)
+    if ( (activeShape[i + 1] + 1 == 8) ||
+         (playField[ activeShape[i] ][ activeShape[i + 1] + 1 ] == 1) )
     {
       move = false;
     }
   }
   if (move == true)
   {
-    for(int i = 3; i < 10; i += 2)
+    for(int i = 2; i < 10; i += 2)
     {
       activeShape[i + 1] += 1;
     }
   }
 }
-
-void rotate()
+/*
+void rotateShape()
 {
-  // Will rotate clockwise relative to anchor block
+  // Will rotateShape clockwise relative to anchor block
   anchorRow = activeShape[activeShape[1] * 2];
   anchorCol = activeShape[activeShape[1] * 2 + 1];
 
@@ -349,7 +406,7 @@ void rotate()
     if ((tempShape[i + 1] == -1) || (tempShape[i + 1] == 8) ||
         (playField[ tempShape[i] ][ tempShape[i + 1] ] == 1))
     {
-      // Shape turn invalid if it will end up out of bounds or contact another block
+      // Shape rotateShape invalid if it will end up out of bounds or contact another block
       return;
     }    
   }
@@ -359,7 +416,7 @@ void rotate()
     activeShape[i] = tempShape[i]
   }
 }
-
+*/
 void endGame()
 {
   delay(6000);
@@ -371,7 +428,11 @@ void endGame()
       playField[i][j] = 0;
     }
   }
-  activeShape = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+  activeShape[0] = 0; activeShape[1] = 0;  //ShapeID; Anchor Coordinate(1 2 3 or 4)
+  activeShape[2] = 0; activeShape[3] = 0;  //Block 1 (r1; c1)
+  activeShape[4] = 0; activeShape[5] = 0;  //Block 2 (r2; c2)
+  activeShape[6] = 0; activeShape[7] = 0;  //Block 3 (r3; c3)
+  activeShape[8] = 0; activeShape[9] = 0;  //Block 4 (r4; c4)
   
   refreshScreen();
 
