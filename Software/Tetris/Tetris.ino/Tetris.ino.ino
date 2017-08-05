@@ -58,10 +58,9 @@ long lastTime = 0;
 
 int left = A0;
 int right = A7;
-int rotateShape = A6;
-int moveTime;
-
-void refreshScreen();
+int rotate = A6;
+long moveTime;
+boolean firstTime;
 
 int numShapes = 7;
 //char shape[numShapes]   = { 'I', 'O', 'T', 'S', 'Z', 'J', 'L' };
@@ -95,12 +94,12 @@ void setup()
   }
   
   lastTime = millis();
-  addShape();
+  moveTime = millis();
+  firstTime = true;
 }
 
 
 void loop() {
-  moveTime = millis();
   
   if(analogRead(left) > 700 && (millis() - lastTime) > 250)
   {
@@ -112,21 +111,23 @@ void loop() {
     lastTime = millis();
     moveRight();
   }
-  if(analogRead(rotateShape) > 700 && (millis() - lastTime) > 250)
+  if(analogRead(rotate) > 700 && (millis() - lastTime) > 250)
   {
     lastTime = millis();
-    // rotateShape();
+    rotateShape();
   }
 
   refreshScreen();
 
   // Will move shape down every 2 sec
-  if (millis() - moveTime > 2000)
+  if (millis() - moveTime > 700)
   {
     // Will move shape down every 2 sec
     moveTime = millis();
-    if ( moveDown() == false )
+    if ( moveDown() == false || firstTime == true)
     {
+      firstTime = false;
+      cancelBlocks();
       addShape();
     }
     refreshScreen();
@@ -165,15 +166,18 @@ void addShape()
   }
   
   //selectShape
+  /*
   double selection = 0;
   int sumProb = 0;
   for (int i = 0; i < numShapes; i++)
   {
-    selection += random() * shapeProb[i];
+    selection += ( (double)random(0,100) / 100.0) * shapeProb[i];
     sumProb += shapeProb[i];
   }
   int shape = (int) (selection / sumProb);
+  */
 
+  int shape = random(0, 7);
   switch(shape) {
     case 0:
       //Shape 'I'
@@ -181,7 +185,7 @@ void addShape()
       activeShape[2] = 0; activeShape[3] = 2;  //Block 1 (r1; c1)
       activeShape[4] = 0; activeShape[5] = 3;  //Block 2 (r2; c2)
       activeShape[6] = 0; activeShape[7] = 4;  //Block 3 (r3; c3)
-      activeShape[8] = 0; activeShape[9] = 0;  //Block 4 (r4; c4)
+      activeShape[8] = 0; activeShape[9] = 5;  //Block 4 (r4; c4)
       break;
     case 1:
       //Shape 'O'
@@ -217,7 +221,7 @@ void addShape()
       break;
     case 5:
       //Shape 'J'
-      activeShape[0] = 5; activeShape[1] = 3;  //ShapeID; Anchor Coordinate(1 2 3 or 4)
+      activeShape[0] = 5; activeShape[1] = 2;  //ShapeID; Anchor Coordinate(1 2 3 or 4)
       activeShape[2] = 0; activeShape[3] = 2;  //Block 1 (r1; c1)
       activeShape[4] = 0; activeShape[5] = 3;  //Block 2 (r2; c2)
       activeShape[6] = 0; activeShape[7] = 4;  //Block 3 (r3; c3)
@@ -225,13 +229,16 @@ void addShape()
       break;
     case 6:
       //Shape 'L'
-      activeShape[0] = 6; activeShape[1] = 1;  //ShapeID; Anchor Coordinate(1 2 3 or 4)
+      activeShape[0] = 6; activeShape[1] = 2;  //ShapeID; Anchor Coordinate(1 2 3 or 4)
       activeShape[2] = 0; activeShape[3] = 2;  //Block 1 (r1; c1)
       activeShape[4] = 0; activeShape[5] = 3;  //Block 2 (r2; c2)
       activeShape[6] = 0; activeShape[7] = 4;  //Block 3 (r3; c3)
       activeShape[8] = 1; activeShape[9] = 2;  //Block 4 (r4; c4)
       break;
+    default:
+      Serial.println("ERROR in addShape");
   }
+  refreshScreen();
 }
 
 void refreshScreen()
@@ -243,41 +250,68 @@ void refreshScreen()
   }
 
   // Updates the play field
+/*
   for(int i = 0; i < 8; i++)
   {
-    // Updates one row
+    // Updates row i
+    digitalWrite(rows[i],LOW);
+    
+    for(int j = 0; j < 8; j++)  {
+      if (playField[i][j] == 1)   {
+        digitalWrite(columns[j],HIGH);
+      }
+    }
+
+    // Display active shape - Option 1
+    //**************************************************
+    /*
+    for(int k = 2; k < 10; k += 2)  {
+      if (activeShape[k] == i)
+      {
+        digitalWrite(columns[ activeShape[k + 1] ],HIGH);
+      }
+    }
+    
+    //**************************************************
+    
+    delayMicroseconds(300);
+
+    digitalWrite(rows[i],HIGH);
+    for(int j = 0; j < 8; j++)
+      digitalWrite(columns[j], LOW);
+
+  }
+*/
+  // Display active, shape - Option 2
+  //***************************************************
+  for(int i = 2; i < 10; i += 2)
+  {
+    if (activeShape[i] < 0)
+      continue;
+    digitalWrite(rows[ activeShape[i] ],LOW);
+    digitalWrite(columns[ activeShape[i+1] ],HIGH);
+    delayMicroseconds(300);
+    digitalWrite(rows[ activeShape[i] ],HIGH);
+    digitalWrite(columns[ activeShape[i+1] ],LOW);
+  }
+  //***************************************************
+
+  //Display playField - Option 2
+  //***************************************************
+  for(int i = 0; i < 8; i++)
+  {
     for(int j = 0; j < 8; j++)
     {
       if (playField[i][j] == 1)
       {
         digitalWrite(rows[i],LOW);
-        digitalWrite(columns[i],HIGH);
+        digitalWrite(columns[j],HIGH);
+        delayMicroseconds(300);
+        digitalWrite(rows[i],HIGH);
+        digitalWrite(columns[j],LOW);
+        
       }
     }
-
-    // Then clears the screen
-    for(int i = 0; i < 8; i++)
-    {
-      digitalWrite(rows[i],HIGH);
-      digitalWrite(columns[i],LOW);
-    }
-  }
-
-  // Updates the active shape
-  for(int i = 2; i < 10; i += 2)
-  {
-    //try
-    //{
-      digitalWrite(rows[ activeShape[i] ],LOW);
-      digitalWrite(columns[ activeShape[i + 1] ],HIGH);
-    /*
-    }
-    catch(...)
-    {
-      // If index out of bounds, then just skip it.  The block still exists
-      // it just could have gone off the top of the screen (due to rotation)
-    }
-    */
   }
 }
 
@@ -286,6 +320,8 @@ boolean moveDown()
   boolean move = true;
   for(int i = 2; i < 10; i += 2)
   {
+    if ( activeShape[i] < 0)
+      continue;
     if ( (playField[ activeShape[i] + 1 ][ activeShape[i + 1] ] == 1) ||
          (activeShape[i] + 1 == 8) )
     {
@@ -295,7 +331,7 @@ boolean moveDown()
   
   if (move == true)
   {
-    for(int i = 3; i < 10; i += 2)
+    for(int i = 2; i < 10; i += 2)
     {
       activeShape[i] += 1;
     }
@@ -344,13 +380,14 @@ void cancelBlocks()
   }
 }
 
-void moveLeft()
+bool moveLeft()
 {
   boolean move = true;
   for(int i = 2; i < 10; i += 2)
   {
-    if ( (activeShape[i + 1] - 1 == -1) ||
-         (playField[ activeShape[i] ][ activeShape[i + 1] - 1 ] == 1) )
+    if ( activeShape[i] < 0 )
+      continue;
+    if ( (activeShape[i + 1] - 1 == -1) || (playField[ activeShape[i] ][ activeShape[i + 1] - 1 ] == 1) )
     {
       move = false;
     }
@@ -361,16 +398,20 @@ void moveLeft()
     {
       activeShape[i + 1] -= 1;
     }
+    return true;
   }
+  else
+    return false;
 }
 
-void moveRight()
+bool moveRight()
 {
   boolean move = true;
   for(int i = 2; i < 10; i += 2)
   {
-    if ( (activeShape[i + 1] + 1 == 8) ||
-         (playField[ activeShape[i] ][ activeShape[i + 1] + 1 ] == 1) )
+    if ( activeShape[i] < 0 )
+      continue;
+    if ( (activeShape[i + 1] + 1 == 8) || (playField[ activeShape[i] ][ activeShape[i + 1] + 1 ] == 1) )
     {
       move = false;
     }
@@ -381,45 +422,82 @@ void moveRight()
     {
       activeShape[i + 1] += 1;
     }
+    return true;
   }
+  else
+    return false;
 }
-/*
+
 void rotateShape()
 {
+  if (activeShape[0] == 1)
+    return;
+  
   // Will rotateShape clockwise relative to anchor block
-  anchorRow = activeShape[activeShape[1] * 2];
-  anchorCol = activeShape[activeShape[1] * 2 + 1];
+  int anchorRow = activeShape[activeShape[1] * 2];
+  int anchorCol = activeShape[activeShape[1] * 2 + 1];
+  int temp, level = 0;
 
-  int tempShape[10] = activeShape;
+  for(int i = 2; i < 10; i+= 2)
+  {
+    if (activeShape[i] > level)
+      level = activeShape[i];
+  }
+  
+  int tempShape[10];
+  tempShape[0] = activeShape[0];
+  tempShape[1] = activeShape[1];
+  tempShape[2] = activeShape[2];
+  tempShape[3] = activeShape[3];
+  tempShape[4] = activeShape[4];
+  tempShape[5] = activeShape[5];
+  tempShape[6] = activeShape[6];
+  tempShape[7] = activeShape[7];
+  tempShape[8] = activeShape[8];
+  tempShape[9] = activeShape[9];
   
   // Loop through and check each block
-  for (int i = 2; i < 10, i+= 2)
+  for (int i = 2; i < 10; i += 2)
   {
     if (i != tempShape[1] * 2)  // If not the anchor block
     {
       // This logic simply flips the x/y coordinates realtive to the anchor block
-      temp             = (tempShape[i + 1] - anchorCol) + anchorRow;
+      temp = (tempShape[i + 1] - anchorCol) + anchorRow;
       tempShape[i + 1] = (anchorRow - tempShape[i]) + anchorCol;
       tempShape[i]     = temp;
     }
-    
-    if ((tempShape[i + 1] == -1) || (tempShape[i + 1] == 8) ||
-        (playField[ tempShape[i] ][ tempShape[i + 1] ] == 1))
-    {
-      // Shape rotateShape invalid if it will end up out of bounds or contact another block
-      return;
-    }    
-  }
 
-  for (int i = 0; i < length(tempShape); i++)
+    
+    if ((tempShape[i + 1] < 0) || (tempShape[i + 1] > 7) || (tempShape[i] > 7) ||
+        (tempShape[i] >= 0 && (playField[ tempShape[i] ][ tempShape[i + 1] ] == 1)))
+      {
+        // Shape rotateShape invalid if it will end up out of bounds or contact another block
+        return;
+      }
+  }
+     
+  int k = 2;
+  while (k < 10)
   {
-    activeShape[i] = tempShape[i]
+    if (tempShape[k] > level)
+    {
+      for (int j = 2; j < 10; j += 2)  {
+        tempShape[j]--;
+      }
+    }
+    else
+      k += 2;
+  }
+  
+  for (int i = 0; i < 10; i++)
+  {
+    activeShape[i] = tempShape[i];
   }
 }
-*/
+
 void endGame()
 {
-  delay(6000);
+  delay(2000);
   
   for(int i = 0; i < 8; i++)
   {
